@@ -482,26 +482,26 @@ class PcapPyBase(object):
             raise PcapPyException(self.err)
         return r
 
-    @property
-    def datalink(self):
+    def get_datalink(self):
         r = pcap_datalink(self._p)
         if r == -1:
             raise PcapPyException(self.err)
         return r
 
-    @datalink.setter
-    def datalink(self, value):
+    def set_datalink(self, value):
         if pcap_set_datalink(self._p, value) < 0:
             raise PcapPyException(self.err)
 
-    @property
-    def snapshot(self):
+    datalink = property(get_datalink, set_datalink)
+
+    def get_snapshot(self):
         return pcap_snapshot(self._p)
 
-    @snapshot.setter
-    def snapshot(self, value):
+    def set_snapshot(self, value):
         if pcap_set_snaplen(self._p, value) < 0:
             raise PcapPyException(self.err)
+
+    snapshot = property(get_snapshot, set_snapshot)
 
     snaplen = snapshot
 
@@ -584,20 +584,20 @@ class PcapPyAlive(PcapPyBase):
 
         return self._parse_entry(ph, pd)
 
-    @property
-    def nonblock(self):
+    def get_nonblock(self):
         errbuf = create_string_buffer(PCAP_ERRBUF_SIZE)
         r = pcap_getnonblock(self._p, c_char_p((addressof(errbuf))))
         if r == -1:
             raise PcapPyException(errbuf.raw)
         return r
 
-    @nonblock.setter
-    def nonblock(self, value):
+    def set_nonblock(self, value):
         errbuf = create_string_buffer(PCAP_ERRBUF_SIZE)
         r = pcap_setnonblock(self._p, value, c_char_p((addressof(errbuf))))
         if r < 0:
             raise PcapPyException(errbuf.raw)
+
+    nonblock = property(get_nonblock, set_nonblock)
 
     @property
     def stats(self):
@@ -620,18 +620,18 @@ class PcapPyAlive(PcapPyBase):
             ps_ifdrop=ps.ps_ifdrop
         )
 
-    @property
-    def filter(self):
+    def get_filter(self):
         return self._bpf
 
-    @filter.setter
-    def filter(self, value):
+    def set_filter(self, value):
         if isinstance(value, basestring):
             self._bpf = self.compile(value)
         else:
             self._bpf = value
         if pcap_setfilter(self._p, pointer(self._bpf._bpf)) < 0:
             raise PcapPyException(self.err)
+
+    filter = property(get_filter, set_filter)
 
     @property
     def selectable_fd(self):
@@ -641,12 +641,10 @@ class PcapPyAlive(PcapPyBase):
     def can_set_rfmon(self):
         return pcap_can_set_rfmon(self._p) == 1
 
-    @property
-    def direction(self):
+    def get_direction(self):
         return self._direction
 
-    @direction.setter
-    def direction(self, value):
+    def set_direction(self, value):
         if value not in [PCAP_D_INOUT, PCAP_D_IN, PCAP_D_OUT]:
             raise ValueError(
                 'Must be either PCAP_D_INOUT (%s), PCAP_D_IN (%s), or PCAP_D_OUT (%s)' %
@@ -659,6 +657,8 @@ class PcapPyAlive(PcapPyBase):
         if pcap_setdirection(self._p, value) < 0:
             raise PcapPyException(self.err)
         self._direction = value
+
+    direction = property(get_direction, set_direction)
 
     @property
     def fileno(self):
@@ -743,42 +743,42 @@ class PcapPyLive(PcapPyAlive):
     def device(self):
         return self._device
 
-    @property
-    def rfmon(self):
+    def get_rfmon(self):
         return self._rfmon
 
-    @rfmon.setter
-    def rfmon(self, value):
+    def set_rfmon(self, value):
         if pcap_set_rfmon(self._p, value) < 0:
             raise PcapPyException(self.err)
         self._rfmon = value
 
-    @property
-    def timeout(self):
+    rfmon = property(get_rfmon, set_rfmon)
+
+    def get_timeout(self):
         return self._timeout
 
-    @timeout.setter
-    def timeout(self, value):
+    def set_timeout(self, value):
         if pcap_set_timeout(self._p, value) < 0:
             raise PcapPyException(self.err)
         self._timeout = value
 
-    @property
-    def promisc(self):
+    timeout = property(get_timeout, set_timeout)
+
+    def get_promisc(self):
         return self._promisc
 
-    @promisc.setter
-    def promisc(self, value):
+    def set_promisc(self, value):
         if pcap_set_promisc(self._p, value) < 0:
             raise PcapPyException(self.err)
         self._promisc = value
 
-    @property
-    def buffer_size(self):
+    promisc = property(get_promisc, set_promisc)
+
+    def get_buffer_size(self):
         return self._buffer_size
 
-    @buffer_size.setter
-    def buffer_size(self, value):
+    def set_buffer_size(self, value):
         if pcap_set_buffer_size(self._p, value) < 0:
             raise PcapPyException(self.err)
         self._buffer_size = value
+
+    buffer_size = property(get_buffer_size, set_buffer_size)
